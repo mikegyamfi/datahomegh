@@ -357,7 +357,7 @@ def mtn_pay_with_wallet(request):
 
         payload = {'receiver': str(phone_number),
                    'reference': str(reference),
-                   'bundle_volume': bundle}
+                   'bundle_volume': str(bundle)}
         files = [
 
         ]
