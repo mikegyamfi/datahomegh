@@ -30,8 +30,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    'neongh-pca3i.ondigitalocean.app',
-    'www.neongh.com'
+    'data-home-gh-ognbb.ondigitalocean.app',
+    'www.datahomegh.com'
 ]
 
 
