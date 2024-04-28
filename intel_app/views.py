@@ -86,13 +86,13 @@ def pay_with_wallet(request):
                 user.wallet -= float(amount)
                 user.save()
                 receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {reference}\n"
-                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nCurrent Wallet Balance: {user.wallet}\nThank you for using XRAY GH."
+                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nCurrent Wallet Balance: {user.wallet}\nThank you for using DATAHOMEGH GH."
 
                 # num_without_0 = phone_number[1:]
                 # print(num_without_0)
                 # receiver_body = {
                 #     'recipient': f"233{num_without_0}",
-                #     'sender_id': 'XRAY GH',
+                #     'sender_id': 'DATAHOMEGH GH',
                 #     'message': receiver_message
                 # }
                 #
@@ -101,7 +101,7 @@ def pay_with_wallet(request):
                 #
                 # sms_body = {
                 #     'recipient': f"233{request.user.phone}",
-                #     'sender_id': 'XRAY GH',
+                #     'sender_id': 'DATAHOMEGH GH',
                 #     'message': sms_message
                 # }
                 #
@@ -109,11 +109,11 @@ def pay_with_wallet(request):
                 #
                 # print(response.text)
                 response1 = requests.get(
-                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to=0{request.user.phone}&from=XRAY&sms={sms_message}")
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to=0{request.user.phone}&from=DATAHOMEGH&sms={sms_message}")
                 print(response1.text)
 
                 response2 = requests.get(
-                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to={phone_number}&from=XRAY&sms={receiver_message}")
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to={phone_number}&from=DATAHOMEGH&sms={receiver_message}")
                 print(response2.text)
 
                 return JsonResponse({'status': 'Transaction Completed Successfully', 'icon': 'success'})
@@ -726,7 +726,7 @@ def mark_as_sent(request, pk):
         sms_message = f"Your account has been credited with {txn.offer}.\nTransaction Reference: {txn.reference}"
 
         response1 = requests.get(
-            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to=0{request.user.phone}&from=XRAY&sms={sms_message}")
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to=0{request.user.phone}&from=DATAHOMEGH&sms={sms_message}")
         print(response1.text)
 
         return redirect('mtn_admin')
@@ -748,7 +748,7 @@ def bt_mark_as_sent(request, pk):
         sms_message = f"Your AT BIG TIME transaction has been completed. {txn.bundle_number} has been credited with {txn.offer}.\nTransaction Reference: {txn.reference}"
 
         response1 = requests.get(
-            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to=0{request.user.phone}&from=XRAY&sms={sms_message}")
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to=0{request.user.phone}&from=DATAHOMEGH&sms={sms_message}")
         print(response1.text)
         messages.success(request, f"Transaction Completed")
         return redirect('bt_admin')
@@ -770,7 +770,7 @@ def afa_mark_as_sent(request, pk):
         sms_message = f"Your AFA Registration has been completed. {txn.phone_number} has been registered.\nTransaction Reference: {txn.reference}"
 
         response1 = requests.get(
-            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to=0{request.user.phone}&from=XRAY&sms={sms_message}")
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to=0{request.user.phone}&from=DATAHOMEGH&sms={sms_message}")
         print(response1.text)
         messages.success(request, f"Transaction Completed")
         return redirect('afa_admin')
@@ -928,7 +928,7 @@ def credit_user_from_list(request, reference):
         sms_message = f"Hello,\nYour wallet has been topped up with GHS{amount}.\nReference: {reference}.\nThank you"
 
         response1 = requests.get(
-            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to=0{request.user.phone}&from=XRAY&sms={sms_message}")
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to=0{request.user.phone}&from=DATAHOMEGH&sms={sms_message}")
         print(response1.text)
         messages.success(request, f"{user} has been credited with {amount}")
         return redirect('topup_list')
@@ -1027,11 +1027,11 @@ def hubtel_webhook(request):
                             sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\n"
 
                             response1 = requests.get(
-                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to=0{user.phone}&from=XRAY&sms={sms_message}")
+                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to=0{user.phone}&from=DATAHOMEGH&sms={sms_message}")
                             print(response1.text)
 
                             response2 = requests.get(
-                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Qmt0VHhiTVlTVE5md1lMcEF6VW456&to={phone_number}&from=XRAY&sms={receiver_message}")
+                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=aUViSlp5SUJIUmdPQkVGd0hIUHc&to={phone_number}&from=DATAHOMEGH&sms={receiver_message}")
                             print(response2.text)
                             return JsonResponse({'status': 'Transaction Completed Successfully'}, status=200)
                         else:
