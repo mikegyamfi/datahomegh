@@ -60,5 +60,23 @@ def send_bundle(receiver, bundle_amount, reference):
     return response
 
 
+def mtn_send_bundle(receiver, bundle_amount, reference):
+    url = "https://testhub.geosams.com/controller/api/send_bundle/"
+
+    payload = json.dumps({
+        "phone_number": str(receiver),
+        "amount": int(bundle_amount),
+        "reference": str(reference),
+        "network": "MTN"
+    })
+    headers = {
+        'Authorization': config("CONTROLLER_TOKEN"),
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text)
+    return response
+
 
 
