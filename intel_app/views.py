@@ -1314,21 +1314,24 @@ def voda_pay_with_wallet(request):
         user.wallet -= float(amount)
         user.save()
 
-        url = "https://www.geosams.com/api/initiate_telecel_transaction"
+        import requests
 
-        payload = {'receiver': str(phone_number),
-                   'reference': str(reference),
-                   'bundle_volume': str(bundle)}
-        files = [
+        url = "https://testhub.geosams.com/controller/api/send_bundle/"
 
-        ]
+        payload = json.dumps({
+            "phone_number": str(phone_number),
+            "amount": int(bundle),
+            "reference": str(reference),
+            "network": "Telecel"
+        })
         headers = {
-            'api-key': config("MTN_KEY")
+            'Authorization': config("CONTROLLER_TOKEN"),
+            'Content-Type': 'application/json'
         }
 
-        response = requests.request("POST", url, headers=headers, data=payload, files=files)
-
+        response = requests.request("POST", url, headers=headers, data=payload)
         print(response.text)
+
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('voda')
 
