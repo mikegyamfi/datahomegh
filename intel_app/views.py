@@ -353,7 +353,7 @@ def mtn_pay_with_wallet(request):
 
         import requests
 
-        url = "https://testhub.geosams.com/controller/api/send_bundle/"
+        url = "https://www.geosams.com/controller/api/send_bundle/"
 
         payload = json.dumps({
             "phone_number": str(phone_number),
@@ -1316,7 +1316,7 @@ def voda_pay_with_wallet(request):
 
         import requests
 
-        url = "https://testhub.geosams.com/controller/api/send_bundle/"
+        url = "https://www.geosams.com/controller/api/send_bundle/"
 
         payload = json.dumps({
             "phone_number": str(phone_number),
