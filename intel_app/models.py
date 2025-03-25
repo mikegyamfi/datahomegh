@@ -36,6 +36,7 @@ class AdminInfo(models.Model):
     )
     payment_channell = models.CharField(max_length=250, choices=choices)
     afa_price = models.FloatField(null=True, blank=True)
+    paystack_active = models.BooleanField(default=False)
 
 
 class IShareBundleTransaction(models.Model):

@@ -1,8 +1,11 @@
+import hashlib
+import hmac
 from datetime import datetime
 
 from decouple import config
+from django.db import transaction
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 import requests
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -824,76 +827,56 @@ def credit_user(request):
 
 @login_required(login_url='login')
 def topup_info(request):
-    # if request.method == "POST":
-    #     admin = models.AdminInfo.objects.filter().first().phone_number
-    #     user = models.CustomUser.objects.get(id=request.user.id)
-    #     amount = request.POST.get("amount")
-    #     print(amount)
-    #     reference = helper.top_up_ref_generator()
-    #     details = {
-    #         'topup_amount': amount
-    #     }
-    #     new_payment = models.Payment.objects.create(
-    #         user=request.user,
-    #         reference=reference,
-    #         transaction_details=details,
-    #         transaction_date=datetime.now(),
-    #         channel="topup"
-    #     )
-    #     new_payment.save()
-    #
-    #     url = "https://payproxyapi.hubtel.com/items/initiate"
-    #     print("hello world")
-    #     print("Amount is " + amount)
-    #
-    #     try:
-    #         total_amount = float(amount) + (1 / 100) * float(amount)
-    #     except:
-    #         return redirect('topup-info')
-    #
-    #     payload = json.dumps({
-    #         "totalAmount": total_amount,
-    #         "description": "Payment for Wallet Topup",
-    #         "callbackUrl": "https://www.geosams.com/hubtel_webhook",
-    #         "returnUrl": "https://www.geosams.com",
-    #         "cancellationUrl": "https://www.geosams.com",
-    #         "merchantAccountNumber": "2019751",
-    #         "clientReference": new_payment.reference
-    #     })
-    #     headers = {
-    #         'Content-Type': 'application/json',
-    #         'Authorization': 'Basic TnhvOFo2ejpjNDRlYmRiZTNjMWY0ZTgxODliNDU2MTE4OGQ3MjkyYg=='
-    #     }
-    #
-    #     response = requests.request("POST", url, headers=headers, data=payload)
-    #
-    #     data = response.json()
-    #
-    #     checkoutUrl = data['data']['checkoutUrl']
-    #
-    #     return redirect(checkoutUrl)
     if request.method == "POST":
         admin = models.AdminInfo.objects.filter().first().phone_number
+        paystack_active = admin.paystack_active
         user = models.CustomUser.objects.get(id=request.user.id)
         amount = request.POST.get("amount")
         print(amount)
         reference = helper.top_up_ref_generator()
-        new_topup_request = models.TopUpRequestt.objects.create(
-            user=request.user,
-            amount=amount,
-            reference=reference,
-        )
-        new_topup_request.save()
 
-        sms_headers = {
-            'Authorization': 'Bearer 1136|LwSl79qyzTZ9kbcf9SpGGl1ThsY0Ujf7tcMxvPze',
-            'Content-Type': 'application/json'
-        }
+        if not paystack_active:
+            new_topup_request = models.TopUpRequestt.objects.create(
+                user=user,
+                amount=amount,
+                reference=reference,
+            )
+            new_topup_request.save()
 
-        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+            sms_headers = {
+                'Authorization': 'Bearer 1136|LwSl79qyzTZ9kbcf9SpGGl1ThsY0Ujf7tcMxvPze',
+                'Content-Type': 'application/json'
+            }
 
-        messages.success(request, f"Your Request has been sent successfully. Kindly go on to pay to {admin} and use the reference stated as reference. Reference: {reference}")
-        return redirect("request_successful", reference)
+            sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+
+            messages.success(request, f"Your Request has been sent successfully. Kindly go on to pay to {admin} and use the reference stated as reference. Reference: {reference}")
+            return redirect("request_successful", reference)
+        else:
+            url = "https://api.paystack.co/transaction/initialize"
+
+            fields = {
+                'email': user.email,
+                'amount': int(int(amount) * 100),
+                'callback_url': "https://www.datahomegh.com",
+                'metadata': {
+                    'channel': "topup",
+                    'real_amount': int(amount),
+                    'db_id': user.id
+                }
+            }
+
+            headers = {
+                "Authorization": config("PAYSTACK_SECRET_KEY"),
+                "Cache-Control": "no-cache"
+            }
+
+            response = requests.post(url, json=fields, headers=headers)
+
+            data = response.json()
+            print(data)
+            url = data['data']['authorization_url']
+            return redirect(url)
     return render(request, "layouts/topup-info.html")
 
 
@@ -951,6 +934,67 @@ def credit_user_from_list(request, reference):
         print(response1.text)
         messages.success(request, f"{user} has been credited with {amount}")
         return redirect('topup_list')
+
+
+@csrf_exempt
+def paystack_webhook(request):
+    if request.method == "POST":
+        paystack_secret_key = config("PAYSTACK_SECRET_KEY")
+        # print(paystack_secret_key)
+        payload = json.loads(request.body)
+
+        paystack_signature = request.headers.get("X-Paystack-Signature")
+
+        if not paystack_secret_key or not paystack_signature:
+            return HttpResponse(status=400)
+
+        computed_signature = hmac.new(
+            paystack_secret_key.encode('utf-8'),
+            request.body,
+            hashlib.sha512
+        ).hexdigest()
+
+        if computed_signature == paystack_signature:
+            print("yes")
+            print(payload.get('data'))
+            r_data = payload.get('data')
+            print(r_data.get('metadata'))
+            print(payload.get('event'))
+            if payload.get('event') == 'charge.success':
+                metadata = r_data.get('metadata')
+                receiver = metadata.get('receiver')
+                db_id = metadata.get('db_id')
+                print(db_id)
+                # offer = metadata.get('offer')
+                user = models.CustomUser.objects.get(id=int(db_id))
+                print(user)
+                channel = metadata.get('channel')
+                real_amount = metadata.get('real_amount')
+                print(real_amount)
+
+                reference = r_data.get('reference')
+
+                if channel == "topup":
+                    with transaction.atomic():
+                        amount = real_amount
+
+                        user.wallet += float(amount)
+                        user.save()
+
+                        new_topup = models.TopUpRequestt.objects.create(
+                            user=user,
+                            reference=reference,
+                            amount=amount,
+                            status=True,
+                        )
+                        new_topup.save()
+                    return JsonResponse({'status': "Wallet Credited"}, status=200)
+                else:
+                    return HttpResponse(status=200)
+            else:
+                return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=401)
 
 
 @csrf_exempt
