@@ -829,7 +829,7 @@ def credit_user(request):
 def topup_info(request):
     if request.method == "POST":
         admin = models.AdminInfo.objects.filter().first().phone_number
-        paystack_active = admin.paystack_active
+        paystack_active = models.AdminInfo.objects.filter().first().paystack_active
         user = models.CustomUser.objects.get(id=request.user.id)
         amount = request.POST.get("amount")
         print(amount)
@@ -997,6 +997,7 @@ def paystack_webhook(request):
             return HttpResponse(status=401)
     else:
         return HttpResponse(status=405)
+
 
 @csrf_exempt
 def hubtel_webhook(request):
