@@ -867,7 +867,7 @@ def topup_info(request):
             }
 
             headers = {
-                "Authorization": config("PAYSTACK_SECRET_KEY"),
+                "Authorization": f"Bearer {config("PAYSTACK_SECRET_KEY")}",
                 "Cache-Control": "no-cache"
             }
 
